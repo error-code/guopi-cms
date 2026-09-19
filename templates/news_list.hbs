@@ -1,0 +1,20 @@
+{{#each posts}}
+    <a class='news-item' href='/news/{{slug}}'>
+        <div class='news-thumb'>
+            {{#if cover}}
+                <img src='{{cover}}' alt='{{title}}' />
+            {{else}}
+                <div class='news-thumb-empty'></div>
+            {{/if}}
+        </div>
+        <div class='news-body'>
+            <h2 class='news-title'>{{title}}</h2>
+            <p class='news-summary'>{{summary}}</p>
+            <div class='news-meta'>
+                {{#if categoryName}}<span class='news-badge'>{{categoryName}}</span>{{/if}}
+                <span>{{formatDate publishedAt}}</span>
+                <span>{{views}} 次浏览</span>
+            </div>
+        </div>
+    </a>
+{{/each}}

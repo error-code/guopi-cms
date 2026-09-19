@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1789828479545,
+      "tag": "0000_gifted_polaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1789830639262,
+      "tag": "0001_serious_human_robot",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1789831406578,
+      "tag": "0002_volatile_rumiko_fujikawa",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1789834002212,
+      "tag": "0003_flippant_iron_monger",
+      "breakpoints": true
+    }
+  ]
+}

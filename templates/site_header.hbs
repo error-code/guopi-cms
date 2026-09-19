@@ -1,0 +1,30 @@
+<header class="site-header">
+    <div class="site-header-inner">
+        <a href="/" class="site-logo">
+            {{#if settings.logo}}<img src="{{settings.logo}}" alt="{{settings.siteName}}">{{/if}}
+            <span>{{settings.siteName}}</span>
+        </a>
+        <nav class="site-nav">
+            {{#each nav}}
+            <div class="nav-item">
+                <a href="{{url}}"{{#if newTab}} target="_blank" rel="noopener"{{/if}}>{{label}}</a>
+                {{#if children.length}}
+                <div class="nav-sub">
+                    {{#each children}}
+                    <a href="{{url}}"{{#if newTab}} target="_blank" rel="noopener"{{/if}}>{{label}}</a>
+                    {{/each}}
+                </div>
+                {{/if}}
+            </div>
+            {{/each}}
+        </nav>
+        <div class="site-user">
+            {{#if user}}
+            <span>{{user.nickname}}</span>
+            {{else}}
+            <a href="/user/login">登录</a>
+            <a href="/user/register" class="site-user-btn">注册</a>
+            {{/if}}
+        </div>
+    </div>
+</header>

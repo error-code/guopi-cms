@@ -1,0 +1,76 @@
+{{#each topPosts}}
+    {{#if @first}}
+        <section class='home-hero'>
+            {{#if cover}}
+                <img class='home-hero-img' src='{{cover}}' alt='{{title}}' />
+            {{else}}
+                <div class='home-hero-bg'></div>
+            {{/if}}
+            <div class='home-hero-mask'></div>
+            <div class='home-hero-inner'>
+                <h2 class='home-hero-title'>{{title}}</h2>
+                <p class='home-hero-summary'>{{summary}}</p>
+                <a class='home-btn' href='/news/{{slug}}'>查看详情 →</a>
+            </div>
+        </section>
+    {{/if}}
+{{/each}}
+
+<section class='home-section'>
+    <div class='home-section-head'>
+        <div>
+            <h2 class='home-section-title'>新闻中心</h2>
+            <p class='home-section-sub'>了解企业最新动态与行业资讯</p>
+        </div>
+        <a class='home-more' href='/news'>更多新闻 →</a>
+    </div>
+    <div class='home-grid'>
+        {{#each posts}}
+            <a class='home-card' href='/news/{{slug}}'>
+                <div class='home-card-img'>
+                    {{#if cover}}
+                        <img src='{{cover}}' alt='{{title}}' />
+                    {{else}}
+                        <div class='home-card-img-empty'></div>
+                    {{/if}}
+                </div>
+                <div class='home-card-body'>
+                    <h3 class='home-card-title'>{{title}}</h3>
+                    <p class='home-card-summary'>{{summary}}</p>
+                    <div class='home-card-meta'>
+                        {{#if categoryName}}<span class='home-badge'>{{categoryName}}</span>{{/if}}
+                        <span>{{formatDate publishedAt}}</span>
+                    </div>
+                </div>
+            </a>
+        {{/each}}
+    </div>
+</section>
+
+<section class='home-section-gray'>
+    <div class='home-section' style='text-align:center'>
+        <h2 class='home-section-title'>关于我们</h2>
+        <p class='home-about-text'>{{settings.about}}</p>
+        <a class='home-btn' href='/page/about' style='margin:24px auto 0'>了解更多 →</a>
+    </div>
+</section>
+
+<section class='home-section'>
+    <div style='text-align:center;margin-bottom:32px'>
+        <h2 class='home-section-title'>联系我们</h2>
+    </div>
+    <div class='home-contact-grid'>
+        <div class='home-contact-item'>
+            <h3>联系电话</h3>
+            <p>{{settings.phone}}</p>
+        </div>
+        <div class='home-contact-item'>
+            <h3>电子邮箱</h3>
+            <p>{{settings.email}}</p>
+        </div>
+        <div class='home-contact-item'>
+            <h3>公司地址</h3>
+            <p>{{settings.address}}</p>
+        </div>
+    </div>
+</section>
