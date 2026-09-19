@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../../utils/db'
 import { users } from '../../database/schema'
 import { fail, setUserSession } from '../../utils/auth'
+import { logSecurity } from '../../utils/security'
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event)
@@ -13,6 +14,7 @@ export default defineEventHandler(async (event) => {
 
     const user = db.select().from(users).where(eq(users.username, username)).get()
     if (!user || !bcrypt.compareSync(password, user.passwordHash)) {
+        logSecurity(event, 'login_failed', `会员登录失败: ${username}`)
         fail(401, '用户名或密码错误')
     }
     if (user.status === 0) fail(403, '账号已被禁用')

@@ -100,6 +100,28 @@ export const navMenus = sqliteTable('nav_menus', {
     sort: integer('sort').notNull().default(0),
 })
 
+// 安全日志：记录可疑请求、登录失败、限流触发等事件
+export const securityLogs = sqliteTable('security_logs', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    ip: text('ip').notNull(),
+    method: text('method').notNull(),
+    path: text('path').notNull(),
+    userAgent: text('user_agent'),
+    os: text('os'),
+    browser: text('browser'),
+    event: text('event').notNull(), // attack_sql | attack_xss | attack_path | login_failed | login_locked | rate_limited | ip_blocked
+    detail: text('detail'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(nowMs),
+})
+
+// IP 黑名单
+export const blockedIps = sqliteTable('blocked_ips', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    ip: text('ip').notNull().unique(),
+    reason: text('reason'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(nowMs),
+})
+
 export type Admin = typeof admins.$inferSelect
 export type User = typeof users.$inferSelect
 export type Category = typeof categories.$inferSelect
@@ -107,3 +129,5 @@ export type Tag = typeof tags.$inferSelect
 export type Post = typeof posts.$inferSelect
 export type Page = typeof pages.$inferSelect
 export type Media = typeof media.$inferSelect
+export type SecurityLog = typeof securityLogs.$inferSelect
+export type BlockedIp = typeof blockedIps.$inferSelect

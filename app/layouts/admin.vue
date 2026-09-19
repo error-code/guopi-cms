@@ -18,6 +18,7 @@ const navItems = [
     { label: '媒体库', to: '/admin/media', icon: 'i-lucide-image' },
     { label: '菜单管理', to: '/admin/menus', icon: 'i-lucide-navigation' },
     { label: '模板管理', to: '/admin/templates', icon: 'i-lucide-layout-template' },
+    { label: '安全日志', to: '/admin/security', icon: 'i-lucide-shield-check' },
     { label: '会员管理', to: '/admin/users', icon: 'i-lucide-users' },
     { label: '站点设置', to: '/admin/settings', icon: 'i-lucide-settings' },
 ]
