@@ -52,6 +52,23 @@ export function parseUserAgent(ua: string): { os: string; browser: string } {
 
 // ---- 日志 ----
 
+/** 用户输入记入日志前的处理：JSON 中的密码/令牌类字段脱敏，并截断长度 */
+export function sanitizeLogInput(raw: string, maxLen = 500): string {
+    let s = raw || ''
+    try {
+        const obj = JSON.parse(s)
+        if (obj && typeof obj === 'object') {
+            for (const k of Object.keys(obj)) {
+                if (/pass(word)?|pwd|secret|token/i.test(k)) obj[k] = '***'
+            }
+            s = JSON.stringify(obj)
+        }
+    } catch {
+        // 非 JSON，原样记录
+    }
+    return s.slice(0, maxLen)
+}
+
 export function logSecurity(event: H3Event, type: SecurityEventType, detail?: string) {
     try {
         const ua = event.node.req.headers['user-agent'] || ''

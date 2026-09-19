@@ -1,5 +1,13 @@
 import { defineEventHandler, getRequestURL, readRawBody } from 'h3'
-import { detectAttack, getClientIp, isBlockedIp, isRateLimited, logSecurity, rejectRequest } from '../utils/security'
+import {
+    detectAttack,
+    getClientIp,
+    isBlockedIp,
+    isRateLimited,
+    logSecurity,
+    rejectRequest,
+    sanitizeLogInput,
+} from '../utils/security'
 
 // 不检查的路径前缀（静态资源、图片等）
 const SKIP_PREFIXES = ['/_nuxt', '/uploads', '/favicon', '/__nuxt']
@@ -26,7 +34,13 @@ export default defineEventHandler(async (event) => {
     // 2. URL 攻击特征检测（query 里常藏注入 payload）
     const urlAttack = detectAttack(pathname + url.search)
     if (urlAttack) {
-        logSecurity(event, urlAttack, `URL 命中攻击特征: ${(pathname + url.search).slice(0, 300)}`)
+        let rawUrl = pathname + url.search
+        try {
+            rawUrl = decodeURIComponent(rawUrl)
+        } catch {
+            // 保留原始编码
+        }
+        logSecurity(event, urlAttack, `用户输入(URL): ${rawUrl.slice(0, 500)}`)
         return rejectRequest(event, urlAttack)
     }
 
@@ -40,7 +54,7 @@ export default defineEventHandler(async (event) => {
             const raw = await readRawBody(event) // h3 会缓存，后续 readBody 不受影响
             const bodyAttack = detectAttack(raw || '')
             if (bodyAttack) {
-                logSecurity(event, bodyAttack, `请求体命中攻击特征: ${pathname}`)
+                logSecurity(event, bodyAttack, `用户输入(Body): ${sanitizeLogInput(raw || '')}`)
                 return rejectRequest(event, bodyAttack)
             }
         }

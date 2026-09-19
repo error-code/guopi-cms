@@ -72,6 +72,18 @@ public/uploads/ 上传文件（运行时生成，按日期归档）
 
 模板语法与可用变量见 [templates/README.md](templates/README.md)。修改文件后刷新页面即可生效；想恢复默认，删除对应文件重启即可自动重建。
 
+## 安全防护
+
+内置全局安全中间件（`server/middleware/0.security.ts`），开箱即用、无需配置：
+
+- **攻击拦截**：识别 SQL 注入、XSS、路径穿越等特征并拦截。页面访问返回友好的中文警告页，API 请求返回 JSON 错误
+- **限流**：登录/注册接口每 IP 10 次 / 5 分钟（防爆破）；全部 API 每 IP 300 次 / 分钟
+- **IP 黑名单**：后台「安全日志」页可手动封禁 / 解封，黑名单 IP 全站拒绝访问
+- **安全日志**：记录攻击与异常事件的 IP、路径、**用户输入**（密码字段自动脱敏）、操作系统与浏览器版本，后台可视化查看与筛选
+- **注入防护根基**：所有数据库查询走 Drizzle ORM 参数化绑定，从机制上杜绝 SQL 拼接
+
+误封自己时自救：`node -e "require('better-sqlite3')('data/cms.db').prepare('DELETE FROM blocked_ips').run()"`
+
 ## 作者与反馈
 
 果皮CMS 是一个个人开源项目，由 [error-code](https://github.com/error-code) 维护。
