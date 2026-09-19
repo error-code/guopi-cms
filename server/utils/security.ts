@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3'
-import { createError, getRequestIP, getRequestURL } from 'h3'
+import { createError, getRequestIP, getRequestURL, setResponseHeader, setResponseStatus } from 'h3'
 import { desc, eq } from 'drizzle-orm'
 import { db } from './db'
 import { blockedIps, securityLogs } from '../database/schema'
@@ -21,23 +21,29 @@ export function parseUserAgent(ua: string): { os: string; browser: string } {
     else if (/windows nt 6\.3/i.test(s)) os = 'Windows 8.1'
     else if (/windows nt 6\.1/i.test(s)) os = 'Windows 7'
     else if (/windows/i.test(s)) os = 'Windows'
-    else if (/iphone/i.test(s)) os = 'iPhone'
-    else if (/ipad/i.test(s)) os = 'iPad'
-    else if (/mac os x/i.test(s)) os = 'macOS'
-    else if (/android/i.test(s)) os = 'Android'
+    else if (/iphone os ([\d_]+)/i.test(s)) os = `iPhone (iOS ${RegExp.$1.replace(/_/g, '.')})`
+    else if (/ipad.*os ([\d_]+)/i.test(s)) os = `iPad (iOS ${RegExp.$1.replace(/_/g, '.')})`
+    else if (/mac os x ([\d_]+)/i.test(s)) os = `macOS ${RegExp.$1.replace(/_/g, '.')}`
+    else if (/android ([\d.]+)/i.test(s)) os = `Android ${RegExp.$1}`
     else if (/linux/i.test(s)) os = 'Linux'
     else if (/curl|wget|python-requests|go-http-client|java\//i.test(s)) os = '脚本/工具'
 
+    const ver = (re: RegExp) => {
+        const m = s.match(re)
+        return m ? ` ${m[1]}` : ''
+    }
     let browser = '未知'
-    if (/micromessenger/i.test(s)) browser = '微信内置浏览器'
-    else if (/edg\//i.test(s)) browser = 'Edge'
-    else if (/opr\/|opera/i.test(s)) browser = 'Opera'
-    else if (/chrome\//i.test(s) && !/chromium/i.test(s)) browser = 'Chrome'
-    else if (/firefox\//i.test(s)) browser = 'Firefox'
-    else if (/safari\//i.test(s) && /version\//i.test(s)) browser = 'Safari'
-    else if (/curl/i.test(s)) browser = 'curl'
-    else if (/wget/i.test(s)) browser = 'wget'
-    else if (/python-requests/i.test(s)) browser = 'Python Requests'
+    if (/micromessenger/i.test(s)) browser = '微信内置浏览器' + ver(/micromessenger\/([\d.]+)/i)
+    else if (/edg\//i.test(s)) browser = 'Edge' + ver(/edg\/([\d.]+)/i)
+    else if (/opr\/|opera/i.test(s)) browser = 'Opera' + ver(/(?:opr|opera)\/([\d.]+)/i)
+    else if (/qqbrowser/i.test(s)) browser = 'QQ浏览器' + ver(/qqbrowser\/([\d.]+)/i)
+    else if (/ucbrowser/i.test(s)) browser = 'UC浏览器' + ver(/ucbrowser\/([\d.]+)/i)
+    else if (/chrome\//i.test(s) && !/chromium/i.test(s)) browser = 'Chrome' + ver(/chrome\/([\d.]+)/i)
+    else if (/firefox\//i.test(s)) browser = 'Firefox' + ver(/firefox\/([\d.]+)/i)
+    else if (/safari\//i.test(s) && /version\//i.test(s)) browser = 'Safari' + ver(/version\/([\d.]+)/i)
+    else if (/curl/i.test(s)) browser = 'curl' + ver(/curl\/([\d.]+)/i)
+    else if (/wget/i.test(s)) browser = 'wget' + ver(/wget\/([\d.]+)/i)
+    else if (/python-requests/i.test(s)) browser = 'Python Requests' + ver(/python-requests\/([\d.]+)/i)
     else if (/go-http-client/i.test(s)) browser = 'Go HTTP Client'
     else if (/bot|spider|crawler|slurp/i.test(s)) browser = '爬虫/机器人'
 
@@ -150,6 +156,61 @@ export function unblockIp(ip: string) {
     refreshBlockCache()
 }
 
-export function forbidden(message: string): never {
-    throw createError({ statusCode: 403, statusMessage: message })
+// ---- 友好拦截响应 ----
+
+const BLOCK_REASONS: Record<string, { title: string; desc: string }> = {
+    attack_sql: {
+        title: '检测到 SQL 注入风险',
+        desc: '您的请求中包含疑似 SQL 注入的内容，为保障站点数据安全已被拦截。',
+    },
+    attack_xss: {
+        title: '检测到跨站脚本风险',
+        desc: '您的请求中包含疑似跨站脚本（XSS）的内容，为保障站点安全已被拦截。',
+    },
+    attack_path: { title: '检测到非法路径访问', desc: '您的请求试图访问受限的系统路径，已被拦截。' },
+    ip_blocked: { title: '访问受限', desc: '您的 IP 地址已被站点管理员限制访问。如有疑问请联系站点管理员。' },
+    rate_limited: { title: '请求过于频繁', desc: '您的操作过于频繁，请稍后再试。' },
+}
+
+function blockPageHtml(title: string, desc: string): string {
+    return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<style>
+  body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f3f4f6; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  .box { max-width: 420px; margin: 16px; padding: 40px; background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,.06); text-align: center; }
+  .icon { width: 56px; height: 56px; margin: 0 auto 20px; border-radius: 50%; background: #fef2f2; color: #dc2626; font-size: 28px; line-height: 56px; }
+  h1 { margin: 0 0 12px; font-size: 20px; color: #111827; }
+  p { margin: 0 0 8px; font-size: 14px; line-height: 1.8; color: #6b7280; }
+  .home { display: inline-block; margin-top: 20px; padding: 10px 28px; border-radius: 8px; background: #111827; color: #fff; text-decoration: none; font-size: 14px; }
+  .home:hover { background: #374151; }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="icon">!</div>
+  <h1>${title}</h1>
+  <p>${desc}</p>
+  <p>如果您认为这是误拦截，请联系站点管理员。</p>
+  <a class="home" href="/">返回首页</a>
+</div>
+</body>
+</html>`
+}
+
+/** 拦截请求：页面访问返回友好警告页（h3 中间件 return 即作为响应），API 请求抛 JSON 错误 */
+export function rejectRequest(event: H3Event, type: SecurityEventType): string | never {
+    const info = BLOCK_REASONS[type] || { title: '请求被拦截', desc: '您的请求触发了站点的安全策略。' }
+    const pathname = getRequestURL(event).pathname
+    const status = type === 'rate_limited' ? 429 : 403
+    // API 与 SSE 等接口调用方需要 JSON；页面访问给可读的警告页
+    if (pathname.startsWith('/api/') || event.method !== 'GET') {
+        throw createError({ statusCode: status, statusMessage: info.title, message: info.desc })
+    }
+    setResponseStatus(event, status)
+    setResponseHeader(event, 'content-type', 'text/html; charset=utf-8')
+    return blockPageHtml(info.title, info.desc)
 }

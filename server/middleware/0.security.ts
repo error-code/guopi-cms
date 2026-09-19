@@ -1,6 +1,5 @@
 import { defineEventHandler, getRequestURL, readRawBody } from 'h3'
-import { createError } from 'h3'
-import { detectAttack, getClientIp, isBlockedIp, isRateLimited, logSecurity } from '../utils/security'
+import { detectAttack, getClientIp, isBlockedIp, isRateLimited, logSecurity, rejectRequest } from '../utils/security'
 
 // 不检查的路径前缀（静态资源、图片等）
 const SKIP_PREFIXES = ['/_nuxt', '/uploads', '/favicon', '/__nuxt']
@@ -21,28 +20,28 @@ export default defineEventHandler(async (event) => {
         if (!isRateLimited(`blocked-log:${ip}`, 1, 60_000)) {
             logSecurity(event, 'ip_blocked', '黑名单 IP 访问被拒绝')
         }
-        throw createError({ statusCode: 403, statusMessage: 'Access denied' })
+        return rejectRequest(event, 'ip_blocked')
     }
 
     // 2. URL 攻击特征检测（query 里常藏注入 payload）
     const urlAttack = detectAttack(pathname + url.search)
     if (urlAttack) {
         logSecurity(event, urlAttack, `URL 命中攻击特征: ${(pathname + url.search).slice(0, 300)}`)
-        throw createError({ statusCode: 403, statusMessage: 'Bad request' })
+        return rejectRequest(event, urlAttack)
     }
 
     // 3. 敏感接口：限流 + 请求体检测
     if (SENSITIVE_PATHS.includes(pathname)) {
         if (isRateLimited(`sensitive:${ip}:${pathname}`, 10, 5 * 60_000)) {
             logSecurity(event, 'rate_limited', `敏感接口限流: ${pathname}`)
-            throw createError({ statusCode: 429, statusMessage: '请求过于频繁，请稍后再试' })
+            return rejectRequest(event, 'rate_limited')
         }
         if (['POST', 'PUT', 'PATCH'].includes(event.method)) {
             const raw = await readRawBody(event) // h3 会缓存，后续 readBody 不受影响
             const bodyAttack = detectAttack(raw || '')
             if (bodyAttack) {
                 logSecurity(event, bodyAttack, `请求体命中攻击特征: ${pathname}`)
-                throw createError({ statusCode: 403, statusMessage: 'Bad request' })
+                return rejectRequest(event, bodyAttack)
             }
         }
         return
@@ -51,6 +50,6 @@ export default defineEventHandler(async (event) => {
     // 4. API 全局限流：每 IP 每分钟 300 次
     if (pathname.startsWith('/api/') && isRateLimited(`api:${ip}`, 300, 60_000)) {
         logSecurity(event, 'rate_limited', `API 全局限流: ${pathname}`)
-        throw createError({ statusCode: 429, statusMessage: '请求过于频繁，请稍后再试' })
+        return rejectRequest(event, 'rate_limited')
     }
 })
