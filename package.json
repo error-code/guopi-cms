@@ -1,6 +1,6 @@
 {
   "name": "guopi-cms",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "果皮CMS —— 基于 Nuxt 4 的开源中文内容管理系统，面向企业站与个人主页，开箱即用、SEO 友好",
   "keywords": [
     "cms",
