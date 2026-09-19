@@ -2,6 +2,8 @@
 const route = useRoute()
 const toast = useToast()
 const { user, fetchMe, logout } = useAdminAuth()
+const settings = useSiteSettings()
+const siteName = computed(() => settings.value.siteName || '我的站点')
 
 onMounted(() => {
     if (!user.value) fetchMe()
@@ -19,6 +21,11 @@ const navItems = [
     { label: '会员管理', to: '/admin/users', icon: 'i-lucide-users' },
     { label: '站点设置', to: '/admin/settings', icon: 'i-lucide-settings' },
 ]
+
+const currentNav = computed(() => navItems.find((item) => isActive(item)))
+useHead({
+    title: computed(() => `${currentNav.value?.label || '管理后台'} - ${siteName.value}`),
+})
 
 function isActive(item: { to: string; exact?: boolean }) {
     return item.exact ? route.path === item.to : route.path.startsWith(item.to)
@@ -79,8 +86,8 @@ const userMenuItems = [
         <!-- 侧边栏 -->
         <aside class="flex w-56 shrink-0 flex-col bg-gray-900 dark:bg-gray-950">
             <NuxtLink to="/admin" class="flex h-16 items-center gap-2 px-5 text-lg font-semibold text-white">
-                <UIcon name="i-lucide-layout-template" class="size-6 text-primary-400" />
-                果皮CMS
+                <UIcon name="i-lucide-layout-template" class="size-6 shrink-0 text-primary-400" />
+                <span class="truncate">{{ siteName }}</span>
             </NuxtLink>
             <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-4">
                 <NuxtLink
@@ -98,7 +105,7 @@ const userMenuItems = [
                     {{ item.label }}
                 </NuxtLink>
             </nav>
-            <div class="px-5 py-4 text-xs text-gray-500">© 果皮CMS</div>
+            <div class="px-5 py-4 text-xs text-gray-500">Powered by 果皮CMS</div>
         </aside>
 
         <!-- 主区域 -->

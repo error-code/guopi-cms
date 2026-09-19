@@ -2,6 +2,10 @@
 definePageMeta({ layout: false })
 
 const { login } = useAdminAuth()
+const settings = useSiteSettings()
+const siteName = computed(() => settings.value.siteName || '我的站点')
+useHead({ title: computed(() => `管理后台登录 - ${siteName.value}`) })
+
 const form = reactive({ username: '', password: '' })
 const loading = ref(false)
 const errorMsg = ref('')
@@ -29,8 +33,8 @@ async function onSubmit() {
         <UCard class="w-full max-w-sm">
             <div class="mb-6 text-center">
                 <UIcon name="i-lucide-layout-template" class="mx-auto mb-3 size-10 text-primary" />
-                <h1 class="text-xl font-semibold">果皮CMS</h1>
-                <p class="mt-1 text-sm text-muted">请使用管理员账号登录</p>
+                <h1 class="text-xl font-semibold">{{ siteName }}</h1>
+                <p class="mt-1 text-sm text-muted">管理后台登录</p>
             </div>
 
             <UAlert
@@ -63,6 +67,8 @@ async function onSubmit() {
                 </UFormField>
                 <UButton type="submit" block size="lg" :loading="loading" label="登 录" />
             </UForm>
+
+            <p class="mt-6 text-center text-xs text-muted">Powered by 果皮CMS</p>
         </UCard>
     </div>
 </template>
