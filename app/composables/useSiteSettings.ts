@@ -11,7 +11,7 @@ export interface SiteSettings {
 }
 
 const defaultSettings: SiteSettings = {
-    siteName: '企业站点',
+    siteName: '果皮CMS',
     logo: '',
     seoKeywords: '',
     seoDescription: '',

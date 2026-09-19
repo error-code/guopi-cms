@@ -211,19 +211,22 @@ AI 写作与智能校对工具大幅提升内容团队效率。
         'about',
         `# 关于我们
 
-果皮科技成立于 2015 年，是一家专注于企业内容管理与数字化转型的科技公司。
+果皮CMS 是一个由个人开发者发起并维护的开源内容管理系统，诞生于一个朴素的想法：让搭建企业官网和个人主页这件事，重新变得简单。
 
-## 我们的使命
+## 为什么做果皮CMS
 
-让每一家企业都能轻松管理自己的数字内容资产。
+市面上的 CMS 要么臃肿难部署，要么对中文场景和 SEO 不够友好。果皮CMS 基于 Nuxt 4 + Vue 3 + SQLite 构建，无需配置外部数据库，一条命令即可上线，同时内置文件模板、自定义导航、媒体库与完整的 SEO 支持。
 
-## 核心团队
+## 开源与社区
 
-团队核心成员来自国内一线互联网公司，拥有平均十年以上的企业软件研发经验。
+果皮CMS 以 MIT 协议开源，欢迎 Star、提 Issue 或贡献代码。
+
+- **项目主页**：[www.guopi.xin](https://www.guopi.xin)
+- **开源地址**：[github.com/error-code](https://github.com/error-code)
 
 ## 联系方式
 
-如有合作意向，欢迎通过「联系我们」页面与我们取得联系。`,
+如有问题或合作意向，欢迎通过「联系我们」页面与我们取得联系。`,
         now,
     ).lastInsertRowid
     insertPage.run(
@@ -231,26 +234,26 @@ AI 写作与智能校对工具大幅提升内容团队效率。
         'contact',
         `# 联系我们
 
-- **电话**：010-88888888
-- **邮箱**：hi@guopi.example.com
-- **地址**：北京市海淀区中关村大街 1 号 果皮大厦 18 层
+- **项目主页**：[www.guopi.xin](https://www.guopi.xin)
+- **GitHub**：[github.com/error-code](https://github.com/error-code)
+- **邮箱**：hi@guopi.xin
 
-工作时间：周一至周五 9:00 - 18:00，我们会在 1 个工作日内回复您的咨询。`,
+使用果皮CMS 遇到问题？欢迎到 GitHub 提 Issue，或通过邮件与我们联系，我们会尽快回复。`,
         now,
     )
 
     // 站点设置
     const insertSetting = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)')
     const settingsData = {
-        siteName: '果皮科技企业站点',
+        siteName: '果皮CMS 演示站点',
         logo: '',
-        seoKeywords: '果皮科技,企业CMS,内容管理,数字化转型',
-        seoDescription: '果皮科技专注企业内容管理与数字化转型，提供新一代企业级 CMS 产品与解决方案。',
+        seoKeywords: '果皮CMS,开源CMS,Nuxt,内容管理系统,企业建站,个人主页',
+        seoDescription: '果皮CMS 是一款开源的中文内容管理系统，基于 Nuxt 4 与 SQLite，开箱即用、SEO 友好，适合企业官网与个人主页快速搭建。',
         icp: '京ICP备00000000号-1',
         phone: '010-88888888',
-        email: 'hi@guopi.example.com',
+        email: 'hi@guopi.xin',
         address: '北京市海淀区中关村大街 1 号',
-        about: '果皮科技成立于 2015 年，专注企业内容管理与数字化转型，以新一代 CMS 产品帮助企业高效管理数字内容资产，服务客户覆盖制造、零售、教育等多个行业。',
+        about: '果皮CMS 是一个个人开源项目，基于 Nuxt 4 + Vue 3 + SQLite 构建，内置文件模板、自定义导航、媒体库与 SEO 优化，让企业官网与个人主页的搭建开箱即用。项目主页 www.guopi.xin，源码托管于 GitHub。',
     }
     for (const [key, value] of Object.entries(settingsData)) {
         insertSetting.run(key, value)

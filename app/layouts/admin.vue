@@ -105,7 +105,10 @@ const userMenuItems = [
                     {{ item.label }}
                 </NuxtLink>
             </nav>
-            <div class="px-5 py-4 text-xs text-gray-500">Powered by 果皮CMS</div>
+            <div class="px-5 py-4 text-xs text-gray-500">
+                Powered by
+                <a href="https://www.guopi.xin" target="_blank" rel="noopener" class="hover:text-gray-300">果皮CMS</a>
+            </div>
         </aside>
 
         <!-- 主区域 -->

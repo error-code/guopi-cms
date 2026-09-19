@@ -68,7 +68,10 @@ async function onSubmit() {
                 <UButton type="submit" block size="lg" :loading="loading" label="登 录" />
             </UForm>
 
-            <p class="mt-6 text-center text-xs text-muted">Powered by 果皮CMS</p>
+            <p class="mt-6 text-center text-xs text-muted">
+                Powered by
+                <a href="https://www.guopi.xin" target="_blank" rel="noopener" class="hover:text-primary">果皮CMS</a>
+            </p>
         </UCard>
     </div>
 </template>

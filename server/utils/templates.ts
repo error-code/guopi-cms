@@ -93,6 +93,10 @@ export const templateSlots: TemplateSlot[] = [
   <div class="site-footer-copy">
     © {{settings.siteName}}
     <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener">{{settings.icp}}</a>
+    <span class="site-footer-powered">
+      Powered by <a href="https://www.guopi.xin" target="_blank" rel="noopener">果皮CMS</a>
+      <a href="https://github.com/error-code" target="_blank" rel="noopener">GitHub</a>
+    </span>
   </div>
 </footer>`,
     },
@@ -129,6 +133,7 @@ export const templateSlots: TemplateSlot[] = [
 .site-footer-copy { border-top: 1px solid #1f2937; padding: 18px 16px; text-align: center; font-size: 12px; }
 .site-footer-copy a { color: #9ca3af; text-decoration: none; margin-left: 8px; }
 .site-footer-copy a:hover { color: #fff; }
+.site-footer-powered { margin-left: 8px; }
 
 /* --- 首页 --- */
 .home-hero { position: relative; overflow: hidden; background: #111827; }

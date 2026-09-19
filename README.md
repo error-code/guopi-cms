@@ -2,6 +2,9 @@
 
 基于 **Nuxt 4 + Vue 3 + SQLite** 的开源中文内容管理系统，面向企业官网、个人主页等场景，开箱即用、SEO 友好。
 
+- 项目主页：https://www.guopi.xin
+- 开源地址：https://github.com/error-code
+
 ## 特性
 
 - **文件模板机制**：前台页面由 `templates/` 目录下的 Handlebars 模板渲染，样式为纯 CSS（不依赖 Tailwind），可直接用编辑器改写模板与样式，适合仿站与深度定制；缺失的模板文件会在启动时自动补齐为默认版本
@@ -67,6 +70,13 @@ public/uploads/ 上传文件（运行时生成，按日期归档）
 | `page_detail.hbs` | 单页详情 |
 
 模板语法与可用变量见 [templates/README.md](templates/README.md)。修改文件后刷新页面即可生效；想恢复默认，删除对应文件重启即可自动重建。
+
+## 作者与反馈
+
+果皮CMS 是一个个人开源项目，由 [error-code](https://github.com/error-code) 维护。
+
+- 使用问题与建议：欢迎到 [GitHub Issues](https://github.com/error-code/guopi-cms/issues) 反馈
+- 邮箱：hi@guopi.xin
 
 ## 开源协议
 
