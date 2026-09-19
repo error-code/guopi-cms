@@ -56,39 +56,76 @@
 
 ## Handlebars 常用语法
 
+### 输出变量
+
 ```hbs
-{{! 注释，不会输出 }}
-
-{{post.title}}
-{{! 转义输出，HTML 标签会显示为文本 }}
-{{{post.contentHtml}}}
-{{! 三重大括号：原样输出 HTML（正文必须用它） }}
-
-{{#if post.cover}}
-    <img src='{{post.cover}}' alt='{{post.title}}' />
-{{else}}
-    <div class='no-cover'></div>
-{{/if}}
-
-{{#unless user}}<a href='/user/login'>登录</a>{{/unless}}
-
-{{#each posts}}
-    {{@index}}
-    {{! 循环下标，从 0 开始 }}
-    {{#if @first}}...{{/if}}
-    {{! 是否首项（@last 为末项） }}
-    <a href='/news/{{slug}}'>{{title}}</a>
-{{/each}}
-
-{{formatDate post.publishedAt}}
-{{! 内置助手：输出 YYYY-MM-DD }}
+{{post.title}}              {{! 转义输出：HTML 标签会显示为文本，防 XSS }}
+{{{post.contentHtml}}}      {{! 三重大括号：原样输出 HTML（渲染好的正文必须用它） }}
+{{settings.siteName}}       {{! 点号访问嵌套属性 }}
 ```
 
-要点：
+### 条件判断
 
-- 循环内部直接写字段名（如 `{{title}}`），访问外层变量用 `{{@root.settings.siteName}}`
-- 判断数组是否为空用 `{{#if list.length}}`
-- 链接、图片地址等一律用双大括号转义输出，防止 XSS；只有后端渲染好的正文 HTML 才用三重大括号
+```hbs
+{{#if post.cover}}
+  <img src="{{post.cover}}" alt="{{post.title}}">
+{{else}}
+  <div class="no-cover"></div>
+{{/if}}
+
+{{#if list.length}}共 {{list.length}} 条{{/if}}              {{! 判断数组非空用 .length }}
+{{#unless user}}<a href="/user/login">登录</a>{{/unless}}    {{! unless = 取反的 if }}
+{{#if post.isTop}}<span class="badge">置顶</span>{{/if}}     {{! 布尔值直接判断 }}
+```
+
+### 循环数组（each）
+
+```hbs
+{{#each posts}}
+  <a href="/news/{{slug}}">
+    {{@index}}               {{! 下标，从 0 开始 }}
+    {{title}}                {{! 循环内直接写当前项的字段名 }}
+    {{formatDate publishedAt}}
+  </a>
+  {{#if @first}}<hr>{{/if}}  {{! @first 首项 / @last 末项 }}
+{{else}}
+  <p class="empty">暂无内容</p>   {{! each 的 else：数组为空时显示 }}
+{{/each}}
+```
+
+### 循环对象（each + @key）
+
+`each` 除了数组，也能遍历**对象**，这时用 `@key` 取属性名、`this` 取属性值：
+
+```hbs
+{{#each settings}}
+  <p>{{@key}}：{{this}}</p>
+{{/each}}
+```
+
+### 访问外层作用域
+
+```hbs
+{{#each posts}}
+  {{title}}                       {{! 当前循环项的字段 }}
+  {{@root.settings.siteName}}     {{! @root 回到最外层上下文 }}
+{{/each}}
+```
+
+### 注释与助手
+
+```hbs
+{{!-- 块注释，不会出现在最终 HTML 里 --}}
+{{! 行注释 }}
+
+{{formatDate post.publishedAt}}   {{! 内置助手：输出 YYYY-MM-DD }}
+```
+
+### 注意事项
+
+- Handlebars 的 `{{#if}}` **不支持表达式**（不能写 `{{#if a == b}}`），只能判断真 / 假 / 有无；需要比较时请借助程序已提供的数据（如 `currentCategory`、`isTop`）
+- 链接、图片地址、标题等用户内容一律用双大括号转义输出；只有后端渲染好的正文 HTML（`contentHtml`）才用三重大括号
+- 模板里不需要写 `<html>` / `<head>` / `<body>`，程序已装配好页面骨架
 
 ## 页面骨架说明
 
