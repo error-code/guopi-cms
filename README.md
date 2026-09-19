@@ -35,16 +35,61 @@ pnpm dev          # 启动开发服务器 http://localhost:3000
 
 ## 生产部署
 
+### 构建
+
 ```bash
 pnpm build
+```
+
+### 方式一：直接运行
+
+```bash
 NUXT_SESSION_PASSWORD=足够长的随机字符串 node .output/server/index.mjs
 ```
 
-注意：
+### 方式二：PM2（推荐，进程守护 + 开机自启）
 
-- 必须从项目根目录启动，程序会读写相对路径下的 `data/`（SQLite 数据库）、`public/uploads/`（上传文件）、`templates/`（模板）
+项目根目录已内置 `ecosystem.config.cjs`，先修改其中的 `NUXT_SESSION_PASSWORD`：
+
+```bash
+npm i -g pm2                 # 安装 pm2（一次即可）
+pnpm build                   # 构建
+pm2 start ecosystem.config.cjs   # 启动（应用名 guopi-cms）
+
+pm2 logs guopi-cms           # 查看日志
+pm2 restart guopi-cms        # 重启（更新代码重新构建后执行）
+pm2 stop guopi-cms           # 停止
+pm2 save                     # 保存进程列表
+pm2 startup                  # 生成开机自启配置（按提示执行输出中的命令）
+```
+
+> SQLite 是单文件数据库，**不要开多实例**（配置中已固定 `instances: 1`）。
+
+### 注意事项
+
+- 必须从**项目根目录**启动，程序会读写相对路径下的 `data/`（SQLite 数据库）、`public/uploads/`（上传文件）、`templates/`（模板）
 - 生产环境务必设置 `NUXT_SESSION_PASSWORD` 环境变量（登录会话加密密钥，至少 32 位随机字符），可参考 `.env.example`
-- 反向代理（Nginx 等）将域名转发到 3000 端口即可
+- 反向代理（Nginx 等）将域名转发到 3000 端口即可；若有域名，建议配置 HTTPS
+- **升级**：拉取新代码后执行 `pnpm install && pnpm db:migrate && pnpm build && pm2 restart guopi-cms`（数据库与上传文件不受影响）
+
+Nginx 反向代理参考：
+
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+> `X-Forwarded-For` 必须带上，安全日志与限流才能拿到访客真实 IP。
 
 ## 目录结构
 
